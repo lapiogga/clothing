@@ -1,0 +1,15 @@
+피복 구매관리 시스템
+
+피복 구매관리 시스템을 구축함에 있어서 총괄 관리자, 기획 담당자, 설계 담당자, 데이터 담당자, 개발 담당자, 테스트 담당자로 각각 그 역할별로 Agent를 구분한다.
+대규모 시스템 개발에 준하여 개발한다.
+요건정의된 자료를 바탕으로 명세서 등 문서를 생성하고, Skill로 관리한다.
+전체적인 시스템을 기획하고 설계한 다음, 설계 구조에 대한 검증을 실시한다.
+테스트 계획을 수립하고, 테스트 데이터를 200여건 이상 확보하고, 기능 및 소스 품질에 대한 테스트를 실시한다.  
+
+Next.js 방식으로 개발하고,
+슈파베이스 프로젝트는 만들어 둔 상태이고, 
+프로젝트 URL은 https://ikbfsyyxftpoygmramvr.supabase.co, 
+그리고 비밀번호는 park.heejin94 이야, 
+anon-key는 sb_publishable_BCZKrWnq-Empj_LFdHZxIg_SZEO2vEW
+
+디자인 시스템은 npx shadcn@latest add https://tweakcn.com/r/themes/doom-64.json 를 사용해줘
