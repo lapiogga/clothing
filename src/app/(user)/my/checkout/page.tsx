@@ -81,7 +81,7 @@ export default function CheckoutPage() {
     setPending(true);
     const result = await createOnlineOrder({
       user_id: userId,
-      store_id: storeId || "",
+      store_id: storeId || undefined,
       product_type: productType,
       items: items.map((i) => ({
         product_id: i.product_id,

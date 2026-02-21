@@ -123,7 +123,7 @@ export async function createOfflineSale(data: {
 // 온라인 구매
 export async function createOnlineOrder(data: {
   user_id: string;
-  store_id: string;
+  store_id?: string;
   product_type: string;
   items: { product_id: string; spec_id?: string; quantity: number; unit_price: number }[];
   delivery_method?: string;  // 맞춤피복은 배송 불필요
@@ -151,7 +151,7 @@ export async function createOnlineOrder(data: {
     .insert({
       order_number: "TEMP",
       user_id: data.user_id,
-      store_id: data.store_id,
+      store_id: data.store_id || null,
       order_type: "online",
       product_type: data.product_type,
       status: "pending",
