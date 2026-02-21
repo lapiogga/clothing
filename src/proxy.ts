@@ -1,11 +1,11 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, type ProxyConfig } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
   return await updateSession(request);
 }
 
-export const config = {
+export const config: ProxyConfig = {
   matcher: [
     /*
      * 다음 경로를 제외한 모든 요청에 매칭:

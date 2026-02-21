@@ -131,6 +131,7 @@ export async function createOnlineOrder(data: {
   delivery_address?: string;
 }) {
   const supabase = await createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
 
   const totalAmount = data.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
@@ -201,6 +202,7 @@ export async function createOnlineOrder(data: {
     reference_type: "order",
     reference_id: order.id,
     fiscal_year: new Date().getFullYear(),
+    created_by: authUser?.id,
   });
 
   await supabase

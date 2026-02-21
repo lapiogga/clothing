@@ -78,6 +78,18 @@ export default function CheckoutPage() {
       return;
     }
 
+    // 완제품 배송 정보 검증
+    if (!isCustom) {
+      if (deliveryMethod === "parcel" && !deliveryAddress.trim()) {
+        toast.error("배송지 주소를 입력해주세요");
+        return;
+      }
+      if (deliveryMethod === "direct" && !deliveryZoneId) {
+        toast.error("배송지를 선택해주세요");
+        return;
+      }
+    }
+
     setPending(true);
     const result = await createOnlineOrder({
       user_id: userId,

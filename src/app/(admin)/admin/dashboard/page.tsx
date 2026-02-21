@@ -49,6 +49,7 @@ export default async function AdminDashboardPage() {
 
   const now = new Date();
   const year = now.getFullYear();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
   const [
@@ -59,6 +60,11 @@ export default async function AdminDashboardPage() {
     { data: recentOrders },
     { data: recentTickets },
     { data: recentPoints },
+    { count: todayDeliveredCount },
+    { data: monthlyDeliveredData },
+    { count: pendingOnlineOrderCount },
+    { count: issuedTicketCount },
+    { count: registeredTicketCount },
   ] = await Promise.all([
     supabase
       .from("users")
@@ -93,10 +99,34 @@ export default async function AdminDashboardPage() {
       .select("id, point_type, amount, description, created_at, users(name)")
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "delivered")
+      .gte("created_at", todayStart),
+    supabase
+      .from("orders")
+      .select("total_amount")
+      .eq("status", "delivered")
+      .gte("created_at", monthStart),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("order_type", "online")
+      .in("status", ["pending", "confirmed"]),
+    supabase
+      .from("tailoring_tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "issued"),
+    supabase
+      .from("tailoring_tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "registered"),
   ]);
 
   const totalGrantAmount = (grantData || []).reduce((s, r) => s + (r.amount || 0), 0);
   const granteeCount = grantData?.length ?? 0;
+  const monthlyDeliveredAmount = (monthlyDeliveredData || []).reduce((s, r) => s + (r.total_amount || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -157,6 +187,71 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">이번 달 누적</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 추가 통계 카드 */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardDescription>오늘 배송완료</CardDescription>
+            <CardTitle className="text-3xl">
+              {(todayDeliveredCount ?? 0).toLocaleString()}건
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">오늘 처리된 주문</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>{now.getMonth() + 1}월 판매금액 (배송완료)</CardDescription>
+            <CardTitle className="text-2xl">{formatAmount(monthlyDeliveredAmount)}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">이번 달 누적</p>
+          </CardContent>
+        </Card>
+
+        <Card className={(pendingOnlineOrderCount ?? 0) > 0 ? "border-destructive" : ""}>
+          <CardHeader>
+            <CardDescription>미처리 온라인 주문</CardDescription>
+            <CardTitle className="text-3xl">
+              {(pendingOnlineOrderCount ?? 0)}건
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">대기·확인 상태</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>발행 체척권</CardDescription>
+            <CardTitle className="text-3xl">
+              {(issuedTicketCount ?? 0)}건
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">업체 등록 대기</p>
+          </CardContent>
+        </Card>
+
+        <Card className={(registeredTicketCount ?? 0) > 0 ? "border-amber-500" : ""}>
+          <CardHeader>
+            <CardDescription>미정산 체척권</CardDescription>
+            <CardTitle className="text-3xl">
+              {(registeredTicketCount ?? 0)}건
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link href="/admin/settlements">
+              <span className="text-sm text-muted-foreground hover:underline">
+                정산 관리 →
+              </span>
+            </Link>
           </CardContent>
         </Card>
       </div>
