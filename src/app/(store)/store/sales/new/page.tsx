@@ -14,16 +14,24 @@ import { getCurrentUser } from "@/actions/auth";
 import { getProducts } from "@/actions/products";
 import { getStoreInventoryForProduct } from "@/actions/inventory";
 import { getAvailablePoints } from "@/actions/points";
+import { getUsers } from "@/actions/users";
 import { createOfflineSale } from "@/actions/orders";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { RANK_LABELS } from "@/lib/constants";
 
 export default function NewSalePage() {
   const router = useRouter();
   const [storeId, setStoreId] = useState("");
   const [productType, setProductType] = useState("finished");
-  const [userId, setUserId] = useState("");
+
+  // 구매자 검색
+  const [userSearch, setUserSearch] = useState("");
+  const [userResults, setUserResults] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userPoints, setUserPoints] = useState<any>(null);
+
+  // 품목
   const [products, setProducts] = useState<any[]>([]);
   const [items, setItems] = useState<{ product_id: string; product_name: string; spec_id?: string; spec_name?: string; quantity: number; unit_price: number }[]>([]);
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -40,17 +48,27 @@ export default function NewSalePage() {
     getProducts({ limit: 200 }).then((r) => setProducts(r.products));
   }, []);
 
-  // 사용자 군번 입력 후 포인트 조회
-  async function handleUserLookup() {
-    if (!userId) return;
-    const pts = await getAvailablePoints(userId);
+  // 사용자 이름/군번으로 검색
+  async function handleUserSearch() {
+    if (!userSearch.trim()) return;
+    const result = await getUsers({ search: userSearch, limit: 10, role: "user" });
+    setUserResults(result.users);
+  }
+
+  async function selectUser(user: any) {
+    setSelectedUser(user);
+    setUserResults([]);
+    setUserSearch("");
+    const pts = await getAvailablePoints(user.id);
     setUserPoints(pts);
   }
 
-  // 품목 선택 시 규격 목록 조회
+  // 품목 선택 시 규격 + 단가 자동조회
   async function handleProductSelect(productId: string) {
     setSelectedProduct(productId);
     setSelectedSpec("");
+    const product = products.find((p) => p.id === productId);
+    setUnitPrice(product?.price || 0);
     if (productType === "finished" && storeId) {
       const inv = await getStoreInventoryForProduct(storeId, productId);
       setSpecs(inv);
@@ -82,13 +100,13 @@ export default function NewSalePage() {
   const totalAmount = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
   async function handleSubmit() {
-    if (!userId || items.length === 0) {
-      toast.error("사용자와 품목을 입력해주세요");
+    if (!selectedUser || items.length === 0) {
+      toast.error("구매자와 품목을 입력해주세요");
       return;
     }
     setPending(true);
     const result = await createOfflineSale({
-      user_id: userId,
+      user_id: selectedUser.id,
       store_id: storeId,
       product_type: productType,
       items: items.map((i) => ({
@@ -117,16 +135,39 @@ export default function NewSalePage() {
           <CardContent className="space-y-3">
             <div className="flex gap-2">
               <Input
-                placeholder="사용자 ID"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
+                placeholder="이름 또는 군번 입력"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleUserSearch()}
               />
-              <Button variant="outline" onClick={handleUserLookup}>조회</Button>
+              <Button variant="outline" onClick={handleUserSearch}>검색</Button>
             </div>
-            {userPoints && (
-              <div className="text-sm space-y-1">
-                <div>가용 포인트: <span className="font-bold text-primary">{userPoints.available.toLocaleString()}원</span></div>
-                <div className="text-muted-foreground">총 {userPoints.total.toLocaleString()} / 사용 {userPoints.used.toLocaleString()} / 예약 {userPoints.reserved.toLocaleString()}</div>
+            {userResults.length > 0 && (
+              <div className="border rounded-md divide-y">
+                {userResults.map((u) => (
+                  <button
+                    key={u.id}
+                    className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+                    onClick={() => selectUser(u)}
+                  >
+                    <span className="font-medium">{u.name}</span>
+                    <span className="text-muted-foreground ml-2">{RANK_LABELS[u.rank as keyof typeof RANK_LABELS] || u.rank}</span>
+                    {u.military_number && <span className="text-muted-foreground ml-2">({u.military_number})</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+            {selectedUser && (
+              <div className="text-sm space-y-1 border rounded-md p-3">
+                <div className="font-medium">{selectedUser.name} <span className="text-muted-foreground font-normal">{RANK_LABELS[selectedUser.rank as keyof typeof RANK_LABELS] || selectedUser.rank}</span></div>
+                {selectedUser.military_number && <div className="text-muted-foreground">군번: {selectedUser.military_number}</div>}
+                {userPoints && (
+                  <div className="mt-2 pt-2 border-t">
+                    <div>가용 포인트: <span className="font-bold text-primary">{userPoints.available.toLocaleString()}원</span></div>
+                    <div className="text-muted-foreground text-xs">총 {userPoints.total.toLocaleString()} / 사용 {userPoints.used.toLocaleString()} / 예약 {userPoints.reserved.toLocaleString()}</div>
+                  </div>
+                )}
+                <Button size="sm" variant="ghost" className="mt-1 h-6 text-xs" onClick={() => { setSelectedUser(null); setUserPoints(null); }}>변경</Button>
               </div>
             )}
           </CardContent>
@@ -135,7 +176,7 @@ export default function NewSalePage() {
         <Card>
           <CardHeader><CardTitle>품목 추가</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            <Select value={productType} onValueChange={setProductType}>
+            <Select value={productType} onValueChange={(v) => { setProductType(v); setSelectedProduct(""); setSpecs([]); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="finished">완제품</SelectItem>
@@ -204,7 +245,7 @@ export default function NewSalePage() {
 
       <div className="flex justify-between items-center mt-4">
         <div className="text-lg font-bold">합계: {totalAmount.toLocaleString()}원</div>
-        <Button onClick={handleSubmit} disabled={pending || items.length === 0}>
+        <Button onClick={handleSubmit} disabled={pending || items.length === 0 || !selectedUser}>
           {pending ? "처리 중..." : "판매 확정"}
         </Button>
       </div>

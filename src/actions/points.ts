@@ -82,6 +82,9 @@ export async function grantAnnualPoints(
   }
 
   const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { success: false, error: "인증이 필요합니다" };
+  const { data: currentUser } = await supabase.from("users").select("role").eq("id", authUser.id).single();
+  if (!currentUser || currentUser.role !== "admin") return { success: false, error: "권한이 없습니다" };
 
   // 각 사용자에게 지급
   for (const calc of calculations) {

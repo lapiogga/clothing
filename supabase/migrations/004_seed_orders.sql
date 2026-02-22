@@ -27,7 +27,8 @@ BEGIN
   SELECT id INTO u5 FROM users WHERE role = 'user' ORDER BY created_at LIMIT 1 OFFSET 4;
 
   IF u1 IS NULL THEN
-    RAISE EXCEPTION '일반사용자(role=user)가 없습니다. 먼저 /api/seed 를 실행하세요.';
+    RAISE NOTICE '일반사용자(role=user)가 없습니다. 테스트 주문 데이터 생성을 건너뜁니다.';
+    RETURN;
   END IF;
 
   -- 온라인 주문 5건 (제2판매소)

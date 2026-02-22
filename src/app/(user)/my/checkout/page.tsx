@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -12,7 +13,8 @@ import {
 } from "@/components/ui/table";
 import { getCurrentUser } from "@/actions/auth";
 import { getAvailablePoints } from "@/actions/points";
-import { createOnlineOrder } from "@/actions/orders";
+import { createOnlineOrder, createCustomOrder } from "@/actions/orders";
+import { getTickets } from "@/actions/tickets";
 import { getDeliveryZones } from "@/actions/delivery-zones";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -39,9 +41,10 @@ export default function CheckoutPage() {
   const [deliveryZoneId, setDeliveryZoneId] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [pending, setPending] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+  const [orderCompleted, setOrderCompleted] = useState(false);
 
   useEffect(() => {
-    // 장바구니에서 선택된 항목만 checkout (checkoutItems 우선, 없으면 cart 전체)
     const selected = localStorage.getItem("checkoutItems");
     const cart = selected
       ? JSON.parse(selected)
@@ -58,7 +61,6 @@ export default function CheckoutPage() {
   const totalAmount = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
   const productType = items.length > 0 ? items[0].product_type : "finished";
   const isCustom = productType === "custom";
-  // 완제품: cart item의 store_id 사용 (쇼핑 시 이미 선택됨)
   const storeId = isCustom ? null : (items[0]?.store_id || null);
   const storeName = isCustom ? null : (items[0]?.store_name || null);
 
@@ -77,8 +79,6 @@ export default function CheckoutPage() {
       toast.error("가용 포인트가 부족합니다");
       return;
     }
-
-    // 완제품 배송 정보 검증
     if (!isCustom) {
       if (deliveryMethod === "parcel" && !deliveryAddress.trim()) {
         toast.error("배송지 주소를 입력해주세요");
@@ -91,35 +91,106 @@ export default function CheckoutPage() {
     }
 
     setPending(true);
-    const result = await createOnlineOrder({
-      user_id: userId,
-      store_id: storeId || undefined,
-      product_type: productType,
-      items: items.map((i) => ({
-        product_id: i.product_id,
-        spec_id: i.spec_id || undefined,
-        quantity: i.quantity,
-        unit_price: i.unit_price,
-      })),
-      // 맞춤피복은 배송 정보 불필요 (체척권 발행으로 처리)
-      delivery_method: isCustom ? undefined : deliveryMethod,
-      delivery_zone_id: isCustom ? undefined : (deliveryZoneId || undefined),
-      delivery_address: isCustom ? undefined : (deliveryAddress || undefined),
-    });
 
-    if (result.success) {
-      // 구매한 항목을 장바구니에서 제거 (나머지 유지)
-      const purchasedIds = new Set(items.map((i) => i.product_id + (i.spec_id || "")));
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const remaining = cart.filter((i: CartItem) => !purchasedIds.has(i.product_id + (i.spec_id || "")));
-      localStorage.setItem("cart", JSON.stringify(remaining));
-      localStorage.removeItem("checkoutItems");
-      toast.success("주문이 완료되었습니다");
-      router.push("/my/orders");
+    if (isCustom) {
+      // 맞춤피복: createCustomOrder 호출 (체척권 자동 발행)
+      const result = await createCustomOrder({
+        user_id: userId,
+        items: items.map((i) => ({
+          product_id: i.product_id,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+        })),
+      });
+
+      if (result.success) {
+        // 발행된 체척권 조회 (가장 최근 issued 상태)
+        const ticketData = await getTickets({ page: 1, limit: 50, user_id: userId, status: "issued" });
+        setIssuedTickets(ticketData.tickets.slice(0, items.length));
+
+        // 장바구니 정리
+        const purchasedIds = new Set(items.map((i) => i.product_id + (i.spec_id || "")));
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const remaining = cart.filter((i: CartItem) => !purchasedIds.has(i.product_id + (i.spec_id || "")));
+        localStorage.setItem("cart", JSON.stringify(remaining));
+        localStorage.removeItem("checkoutItems");
+
+        setOrderCompleted(true);
+        toast.success("맞춤피복 주문 완료 - 체척권이 발행되었습니다");
+      } else {
+        toast.error(result.error || "주문에 실패했습니다");
+      }
     } else {
-      toast.error(result.error || "주문에 실패했습니다");
+      // 완제품: createOnlineOrder 호출
+      const result = await createOnlineOrder({
+        user_id: userId,
+        store_id: storeId || undefined,
+        product_type: productType,
+        items: items.map((i) => ({
+          product_id: i.product_id,
+          spec_id: i.spec_id || undefined,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+        })),
+        delivery_method: deliveryMethod,
+        delivery_zone_id: deliveryZoneId || undefined,
+        delivery_address: deliveryAddress || undefined,
+      });
+
+      if (result.success) {
+        const purchasedIds = new Set(items.map((i) => i.product_id + (i.spec_id || "")));
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const remaining = cart.filter((i: CartItem) => !purchasedIds.has(i.product_id + (i.spec_id || "")));
+        localStorage.setItem("cart", JSON.stringify(remaining));
+        localStorage.removeItem("checkoutItems");
+        toast.success("주문이 완료되었습니다");
+        router.push("/my/orders");
+      } else {
+        toast.error(result.error || "주문에 실패했습니다");
+      }
     }
+
     setPending(false);
+  }
+
+  // 맞춤피복 주문 완료 화면 (체척권 번호 표시)
+  if (orderCompleted && isCustom) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-6">주문 완료</h1>
+        <Card>
+          <CardHeader><CardTitle>체척권 발행 완료</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              맞춤피복 주문이 완료되었습니다. 아래 체척권 번호로 체척업체에서 맞춤 제작을 진행하세요.
+            </p>
+            {issuedTickets.length > 0 ? (
+              <div className="space-y-2">
+                {issuedTickets.map((t, i) => (
+                  <div key={t.id} className="flex items-center justify-between border rounded-md p-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">체척권 번호</div>
+                      <div className="font-mono font-bold text-lg">{t.ticket_number}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{t.products?.name || items[i]?.product_name}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">{t.amount.toLocaleString()}원</div>
+                      <Badge variant="outline" className="mt-1">발행</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">체척권 현황 페이지에서 확인하세요.</p>
+            )}
+            <div className="flex gap-3 mt-4">
+              <Button onClick={() => router.push("/my/tickets")} className="flex-1">체척권 현황 보기</Button>
+              <Button variant="outline" onClick={() => router.push("/my/orders")}>주문 내역</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (items.length === 0) {

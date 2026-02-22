@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx shadcn@latest add button card dialog dropdown-menu input label table tabs select separator sheet badge form sonner)",
       "Bash(npm install:*)",
-      "Bash(npx supabase db push:*)"
-    ]
+      "Bash(npx supabase db push:*)",
+      "Bash(start \"\" \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" 2>/dev/null || start \"\" \"C:\\\\Program Files \\(x86\\)\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" 2>/dev/null)",
+      "Bash(head:*)",
+      "Bash(ls:*)"
+    ],
+    "defaultMode": "bypassPermissions"
   }
 }

@@ -11,6 +11,12 @@ BEGIN
     RETURN;
   END IF;
 
+  -- 사용자 데이터가 없으면 건너뜀
+  IF NOT EXISTS (SELECT 1 FROM users WHERE id = 'd1000000-0000-0000-0000-000000000006') THEN
+    RAISE NOTICE '사용자 데이터가 없습니다. 확장 테스트 데이터 생성을 건너뜁니다.';
+    RETURN;
+  END IF;
+
   -- ============================================
   -- 1. 오프라인 판매 완료 주문 10건 (제1판매소)
   -- users: u6~u15

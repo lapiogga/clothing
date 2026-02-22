@@ -43,7 +43,15 @@ export default function InventoryPage() {
   const fetchData = useCallback(async () => {
     if (!storeId) return;
     const result = await getInventory({ page, store_id: storeId, search: search || undefined });
-    setInventory(result.inventory);
+    const sorted = (result.inventory || []).sort((a: any, b: any) => {
+      const nameA = a.products?.name || "";
+      const nameB = b.products?.name || "";
+      if (nameA !== nameB) return nameA.localeCompare(nameB, "ko");
+      const specA = a.product_specs?.spec_name || "";
+      const specB = b.product_specs?.spec_name || "";
+      return specA.localeCompare(specB, "ko");
+    });
+    setInventory(sorted);
     setTotal(result.total);
   }, [page, search, storeId]);
 
@@ -168,7 +176,7 @@ export default function InventoryPage() {
                   <TableCell>{new Date(log.created_at).toLocaleString("ko-KR")}</TableCell>
                   <TableCell>{LOG_TYPE_LABELS[log.log_type] || log.log_type}</TableCell>
                   <TableCell className="text-right">{log.quantity}</TableCell>
-                  <TableCell>{log.description || "-"}</TableCell>
+                  <TableCell>{log.reason || "-"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

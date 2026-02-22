@@ -28,13 +28,28 @@ export default function TailorTicketsPage() {
 
   const fetchData = useCallback(async () => {
     if (!tailorId) return;
-    const result = await getTickets({
-      page,
-      tailor_id: tailorId,
-      status: status || undefined,
-    });
-    setTickets(result.tickets);
-    setTotal(result.total);
+
+    // issued(tailor_id=null) 상태와 내 tailor_id 체척권을 모두 조회
+    const fetchMine = status && status !== "issued"
+      ? getTickets({ page: 1, limit: 1000, tailor_id: tailorId, status })
+      : getTickets({ page: 1, limit: 1000, tailor_id: tailorId });
+
+    const fetchIssued = !status || status === "issued"
+      ? getTickets({ page: 1, limit: 1000, status: "issued" })
+      : Promise.resolve({ tickets: [], total: 0 });
+
+    const [myResult, issuedResult] = await Promise.all([fetchMine, fetchIssued]);
+
+    let combined: any[] = [];
+    if (!status || status === "issued") {
+      combined = [...issuedResult.tickets, ...myResult.tickets.filter((t: any) => t.status !== "issued")];
+    } else {
+      combined = myResult.tickets;
+    }
+
+    const offset = (page - 1) * 20;
+    setTickets(combined.slice(offset, offset + 20));
+    setTotal(combined.length);
   }, [page, status, tailorId]);
 
   useEffect(() => {

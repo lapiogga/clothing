@@ -354,7 +354,18 @@ export default function ProductsPage() {
               <Label htmlFor="prod_desc">설명</Label>
               <Input id="prod_desc" name="description" defaultValue={editProduct?.description || ""} />
             </div>
-            {editProduct && <input type="hidden" name="is_active" value={editProduct.is_active ? "true" : "false"} />}
+            <div className="space-y-2">
+              <Label>사용여부</Label>
+              <Select name="is_active" defaultValue={editProduct ? (editProduct.is_active ? "true" : "false") : "true"}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">사용</SelectItem>
+                  <SelectItem value="false">미사용</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button type="submit" className="w-full" disabled={pending}>
               {editProduct ? "수정" : "등록"}
             </Button>

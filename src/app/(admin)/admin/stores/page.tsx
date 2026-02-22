@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
@@ -22,6 +25,7 @@ export default function StoresPage() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
+  const [isActive, setIsActive] = useState("true");
   const [pending, setPending] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -32,7 +36,14 @@ export default function StoresPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  function openEdit(store: any) {
+    setEditItem(store);
+    setIsActive(store.is_active ? "true" : "false");
+    setDialogOpen(true);
+  }
+
   async function handleSubmit(formData: FormData) {
+    if (editItem) formData.set("is_active", isActive);
     setPending(true);
     const result = editItem
       ? await updateStore(editItem.id, formData)
@@ -77,6 +88,18 @@ export default function StoresPage() {
                 <Input id="name" name="name" defaultValue={editItem?.name || ""} required />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="email">이메일 *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  defaultValue={editItem?.email || ""}
+                  disabled={!!editItem}
+                  required={!editItem}
+                  placeholder={editItem ? undefined : "로그인용 이메일 (초기 패스워드: 1111)"}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="address">주소</Label>
                 <Input id="address" name="address" defaultValue={editItem?.address || ""} />
               </div>
@@ -91,7 +114,18 @@ export default function StoresPage() {
                 </div>
               </div>
               {editItem && (
-                <input type="hidden" name="is_active" value={editItem.is_active ? "true" : "false"} />
+                <div className="space-y-2">
+                  <Label>활성여부</Label>
+                  <Select value={isActive} onValueChange={setIsActive}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">활성</SelectItem>
+                      <SelectItem value="false">비활성</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
               <Button type="submit" className="w-full" disabled={pending}>
                 {pending ? "처리 중..." : editItem ? "수정" : "등록"}
@@ -114,6 +148,7 @@ export default function StoresPage() {
         <TableHeader>
           <TableRow>
             <TableHead>판매소명</TableHead>
+            <TableHead>이메일</TableHead>
             <TableHead>주소</TableHead>
             <TableHead>연락처</TableHead>
             <TableHead>담당자</TableHead>
@@ -124,11 +159,12 @@ export default function StoresPage() {
         <TableBody>
           {stores.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">데이터가 없습니다</TableCell>
+              <TableCell colSpan={7} className="text-center text-muted-foreground">데이터가 없습니다</TableCell>
             </TableRow>
           ) : stores.map((store) => (
             <TableRow key={store.id}>
               <TableCell className="font-medium">{store.name}</TableCell>
+              <TableCell>{store.email || "-"}</TableCell>
               <TableCell>{store.address || "-"}</TableCell>
               <TableCell>{store.phone || "-"}</TableCell>
               <TableCell>{store.manager_name || "-"}</TableCell>
@@ -139,7 +175,7 @@ export default function StoresPage() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => { setEditItem(store); setDialogOpen(true); }}>수정</Button>
+                  <Button size="sm" variant="outline" onClick={() => openEdit(store)}>수정</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(store.id)}>삭제</Button>
                 </div>
               </TableCell>

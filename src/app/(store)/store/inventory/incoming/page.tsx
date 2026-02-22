@@ -30,7 +30,10 @@ export default function IncomingPage() {
     getCurrentUser().then((user) => {
       if (user?.store_id) setStoreId(user.store_id);
     });
-    getProducts({ limit: 200, product_type: "finished" }).then((r) => setProducts(r.products));
+    getProducts({ limit: 200, product_type: "finished" }).then((r) => {
+      const sorted = (r.products || []).sort((a: any, b: any) => (a.name || "").localeCompare(b.name || "", "ko"));
+      setProducts(sorted);
+    });
   }, []);
 
   async function handleProductSelect(productId: string) {

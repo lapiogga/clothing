@@ -73,8 +73,13 @@ export default function MyTicketsPage() {
             </TableRow>
           ) : tickets.map((t) => (
             <TableRow key={t.id}>
-              <TableCell className="font-mono text-sm">{t.ticket_number}</TableCell>
-              <TableCell>{t.products?.name}</TableCell>
+              <TableCell>
+                <div className="font-mono text-sm">{t.ticket_number}</div>
+                {t.order_items?.orders?.order_number && (
+                  <div className="text-xs text-muted-foreground mt-0.5">주문: {t.order_items.orders.order_number}</div>
+                )}
+              </TableCell>
+              <TableCell>{t.products?.name || "-"}</TableCell>
               <TableCell className="text-right">{t.amount.toLocaleString()}원</TableCell>
               <TableCell>{t.tailors?.name || "-"}</TableCell>
               <TableCell>

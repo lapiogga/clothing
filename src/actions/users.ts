@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function getUsers({
@@ -25,7 +26,7 @@ export async function getUsers({
 
   if (role) query = query.eq("role", role);
   if (rank) query = query.eq("rank", rank);
-  if (search) query = query.ilike("name", `%${search}%`);
+  if (search) query = query.or(`name.ilike.%${search}%,military_number.ilike.%${search}%`);
 
   const { data, error, count } = await query
     .order("created_at", { ascending: false })
@@ -74,10 +75,11 @@ export async function createUser(formData: FormData) {
     return { success: false, error: "체척업체 담당자는 소속 업체를 선택하세요" };
   }
 
-  // Supabase Auth에 사용자 생성
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  // Supabase Auth에 사용자 생성 (서비스 롤 키 필요)
+  const adminClient = createAdminClient();
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email,
-    password: "temp1234!", // 임시 비밀번호
+    password: "1111",
     email_confirm: true,
   });
 

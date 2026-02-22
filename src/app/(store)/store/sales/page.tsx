@@ -51,9 +51,14 @@ export default function SalesListPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">판매 내역</h1>
-        <Link href="/store/sales/new">
-          <Button>새 판매</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/store/sales/return">
+            <Button variant="outline">반품 처리</Button>
+          </Link>
+          <Link href="/store/sales/new">
+            <Button>새 판매</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4">

@@ -46,6 +46,11 @@ export async function processIncoming(data: {
 }) {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { success: false, error: "인증이 필요합니다" };
+  const { data: currentUser } = await supabase.from("users").select("role").eq("id", authUser.id).single();
+  if (!currentUser || !["admin", "store"].includes(currentUser.role)) {
+    return { success: false, error: "권한이 없습니다" };
+  }
 
   for (const item of data.items) {
     // 기존 재고 조회
@@ -102,6 +107,11 @@ export async function adjustInventory(data: {
 }) {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) return { success: false, error: "인증이 필요합니다" };
+  const { data: currentUser } = await supabase.from("users").select("role").eq("id", authUser.id).single();
+  if (!currentUser || !["admin", "store"].includes(currentUser.role)) {
+    return { success: false, error: "권한이 없습니다" };
+  }
 
   const { data: inv } = await supabase
     .from("inventory")
@@ -126,7 +136,7 @@ export async function adjustInventory(data: {
     inventory_id: data.inventory_id,
     log_type: data.adjust_type,
     quantity: data.quantity,
-    description: data.reason || null,
+    reason: data.reason || null,
     created_by: authUser?.id,
   });
 
