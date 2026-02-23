@@ -141,7 +141,7 @@ export default function MenusPage() {
         </TableCell>
         <TableCell>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => openEdit(menu)}>수정</Button>
+            <Button size="sm" variant="secondary" onClick={() => openEdit(menu)}>수정</Button>
             <Button size="sm" variant="destructive" onClick={() => handleDelete(menu.id)}>삭제</Button>
           </div>
         </TableCell>

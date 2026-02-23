@@ -175,7 +175,7 @@ export default function StoresPage() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(store)}>수정</Button>
+                  <Button size="sm" variant="secondary" onClick={() => openEdit(store)}>수정</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(store.id)}>삭제</Button>
                 </div>
               </TableCell>

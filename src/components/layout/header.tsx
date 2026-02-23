@@ -27,7 +27,7 @@ export function Header({ userName, roleName, menuItems }: HeaderProps) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-card">
+    <header className="sticky top-0 z-50 border-b bg-[#FAF7F2]">
       <div className="flex h-14 items-center px-6">
         {/* 좌측: 시스템명 */}
         <div className="mr-8 font-bold text-lg">

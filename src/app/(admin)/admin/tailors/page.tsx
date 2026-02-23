@@ -190,7 +190,7 @@ export default function TailorsPage() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(tailor)}>수정</Button>
+                  <Button size="sm" variant="secondary" onClick={() => openEdit(tailor)}>수정</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(tailor.id)}>삭제</Button>
                 </div>
               </TableCell>

@@ -124,7 +124,7 @@ export default function DeliveryZonesPage() {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => { setEditItem(zone); setDialogOpen(true); }}>수정</Button>
+                  <Button size="sm" variant="secondary" onClick={() => { setEditItem(zone); setDialogOpen(true); }}>수정</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(zone.id)}>삭제</Button>
                 </div>
               </TableCell>

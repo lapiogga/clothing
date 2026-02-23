@@ -182,7 +182,7 @@ export default function ProductsPage() {
   return (
     <div className="flex gap-6">
       {/* 좌측: 카테고리 트리 */}
-      <div className="w-64 shrink-0">
+      <div className="w-64 shrink-0 bg-[#FAF7F2] rounded border p-3">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold">품목 분류</h2>
           <Button size="sm" variant="outline" onClick={() => {
@@ -293,7 +293,7 @@ export default function ProductsPage() {
                     {product.product_type === "finished" ? "완제품" : "맞춤피복"}
                   </Badge>
                 </TableCell>
-                <TableCell>{product.price.toLocaleString()}원</TableCell>
+                <TableCell className="text-right">{product.price.toLocaleString()}원</TableCell>
                 <TableCell>
                   <Badge variant={product.is_active ? "default" : "destructive"}>
                     {product.is_active ? "사용" : "미사용"}
@@ -301,9 +301,9 @@ export default function ProductsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openProdDialog(product)}>수정</Button>
+                    <Button size="sm" variant="secondary" onClick={() => openProdDialog(product)}>수정</Button>
                     {product.product_type === "finished" && (
-                      <Button size="sm" variant="outline" onClick={() => openSpecDialog(product)}>규격</Button>
+                      <Button size="sm" variant="secondary" onClick={() => openSpecDialog(product)}>규격</Button>
                     )}
                   </div>
                 </TableCell>
