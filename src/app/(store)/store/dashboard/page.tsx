@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/actions/auth";
 import { getOrders } from "@/actions/orders";
 import { getInventory } from "@/actions/inventory";
 
 export default function StoreDashboardPage() {
-  const [storeId, setStoreId] = useState("");
   const [stats, setStats] = useState({
     todaySales: 0,
     todayAmount: 0,
@@ -15,40 +15,64 @@ export default function StoreDashboardPage() {
     lowStock: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const storeIdRef = useRef("");
 
-  useEffect(() => {
-    async function load() {
-      const user = await getCurrentUser();
-      if (!user?.store_id) { setLoading(false); return; }
-      const sid = user.store_id;
-      setStoreId(sid);
+  const load = useCallback(async (sid?: string) => {
+    const resolvedSid = sid || storeIdRef.current;
+    if (!resolvedSid) return;
+    setLoading(true);
 
-      const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
-      const [todayData, pendingData, inventoryData] = await Promise.all([
-        getOrders({ page: 1, limit: 1000, store_id: sid, order_type: "offline", status: "delivered", date_from: today, date_to: today }),
-        getOrders({ page: 1, limit: 1000, store_id: sid, order_type: "online", status: "pending" }),
-        getInventory({ page: 1, store_id: sid }),
-      ]);
+    const [todayData, pendingData, inventoryData] = await Promise.all([
+      getOrders({ page: 1, limit: 1000, store_id: resolvedSid, order_type: "offline", status: "delivered", date_from: today, date_to: today }),
+      getOrders({ page: 1, limit: 1000, store_id: resolvedSid, order_type: "online", status: "pending" }),
+      getInventory({ page: 1, store_id: resolvedSid }),
+    ]);
 
-      const lowStock = (inventoryData.inventory || []).filter((inv: any) => inv.quantity < 10).length;
+    const lowStock = (inventoryData.inventory || []).filter((inv: any) => inv.quantity < 10).length;
 
-      setStats({
-        todaySales: todayData.total,
-        todayAmount: todayData.orders.reduce((s: number, o: any) => s + o.total_amount, 0),
-        pendingOnline: pendingData.total,
-        lowStock,
-      });
-      setLoading(false);
-    }
-    load();
+    setStats({
+      todaySales: todayData.total,
+      todayAmount: todayData.orders.reduce((s: number, o: any) => s + o.total_amount, 0),
+      pendingOnline: pendingData.total,
+      lowStock,
+    });
+    setLastUpdated(new Date());
+    setLoading(false);
   }, []);
 
-  if (loading) return <div className="text-muted-foreground p-6">불러오는 중...</div>;
+  useEffect(() => {
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user?.store_id) { setLoading(false); return; }
+      storeIdRef.current = user.store_id;
+      await load(user.store_id);
+    }
+    init();
+
+    // 탭 포커스 복귀 시 자동 갱신
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [load]);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">피복판매소 대시보드</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">피복판매소 대시보드</h1>
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <span className="text-xs text-muted-foreground">
+              갱신: {lastUpdated.toLocaleTimeString("ko-KR")}
+            </span>
+          )}
+          <Button variant="outline" size="sm" onClick={() => load()} disabled={loading}>
+            {loading ? "갱신 중..." : "새로고침"}
+          </Button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
@@ -88,6 +112,10 @@ export default function StoreDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {loading && (
+        <div className="text-sm text-muted-foreground">갱신 중...</div>
+      )}
     </div>
   );
 }

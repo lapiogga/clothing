@@ -27,7 +27,7 @@ export async function getTickets({
   let query = supabase
     .from("tailoring_tickets")
     .select(
-      "*, users(name, rank, military_number), products(name), tailors(name), order_items(orders(order_number))",
+      "*, users(name, rank, military_number), products(name), tailors(name), order_items(id, order_id, orders(id, order_number, order_type, created_at))",
       { count: "exact" }
     );
 

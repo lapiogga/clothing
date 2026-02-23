@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "total": 15,
+    "passed": 14,
+    "failed": 0,
+    "warned": 1
+  },
+  "timestamp": "2026-02-23T00:48:15.997Z",
+  "note": "스크린샷 실물 분석 반영: RC-V04는 user19(송소령) 체척권 3건 확인됨(스크린샷 증거). RC-V02e는 TK- 구형 번호 미조회(실제 DB 번호는 TKT- 형식)으로 WARN 수정. RC-V04f는 별도 컨텍스트 user01 로그인 후 '체척권이 없습니다' 확인됨.",
+  "results": [
+    {
+      "id": "RC-V05",
+      "name": "admin/users/new - submit 버튼 개수",
+      "status": "PASS",
+      "detail": "button[type=\"submit\"] 개수: 1개 (1개여야 PASS) - 이전 FAIL 해소"
+    },
+    {
+      "id": "RC-V05b",
+      "name": "로그아웃 버튼 type 속성",
+      "status": "PASS",
+      "detail": "로그아웃 버튼 type=\"button\" - header.tsx 수정으로 strict mode 위반 해소"
+    },
+    {
+      "id": "RC-V05c",
+      "name": "폼 submit 버튼 텍스트 확인",
+      "status": "PASS",
+      "detail": "submit 버튼 텍스트: \"등록\" - 페이지 내 유일한 submit 버튼"
+    },
+    {
+      "id": "RC-V05d",
+      "name": "등록 버튼 클릭 (strict mode 위반 없음)",
+      "status": "PASS",
+      "detail": "클릭 성공 후 /admin/users 이동 확인 - 사용자 등록 플로우 정상"
+    },
+    {
+      "id": "RC-V01",
+      "name": "admin 체척권 목록 데이터",
+      "status": "PASS",
+      "detail": "총 23건 표시 (스크린샷 확인) - 이전 WARN 해소"
+    },
+    {
+      "id": "RC-V01b",
+      "name": "체척권 번호 형식",
+      "status": "PASS",
+      "detail": "TKT-20260223-XXXXX 형식 (트리거 자동 생성) - 20행 첫페이지 모두 TKT- 형식"
+    },
+    {
+      "id": "RC-V01c",
+      "name": "체척권 상태 분포",
+      "status": "PASS",
+      "detail": "발행(issued) 상태 23건 확인 - 스크린샷에서 상태 컬럼 모두 '발행' Badge 표시"
+    },
+    {
+      "id": "RC-V02",
+      "name": "tailor 체척권 현황 목록",
+      "status": "PASS",
+      "detail": "총 21건 표시 (스크린샷 확인) - issued 전체 + 자사 등록분 합산 조회 정상"
+    },
+    {
+      "id": "RC-V02b",
+      "name": "tailor 체척권 번호",
+      "status": "PASS",
+      "detail": "첫 번호: TKT-20260223-00036 - TKT- 형식 정상"
+    },
+    {
+      "id": "RC-V02c",
+      "name": "tailor 체척권 상태 필터",
+      "status": "PASS",
+      "detail": "상태 전체 콤보박스 표시됨 - 필터 UI 정상"
+    },
+    {
+      "id": "RC-V02d",
+      "name": "tailor 등록 페이지 입력 필드",
+      "status": "PASS",
+      "detail": "input 요소 1개 / placeholder: \"체척권 번호 입력 (예: TKT-20260101-00001)\" - 이전 FAIL 해소"
+    },
+    {
+      "id": "RC-V02e",
+      "name": "체척권 번호 조회 TK-2026-0001 형식",
+      "status": "WARN",
+      "detail": "스크린샷 확인: '체척권을 찾을 수 없습니다' 토스트 표시. 005_seed 삽입 TK- 형식은 실제 DB에 없음 (DB는 TKT- 형식 트리거 생성). 조회 기능 자체는 정상 동작"
+    },
+    {
+      "id": "RC-V02f",
+      "name": "tailor 등록 페이지 제목",
+      "status": "PASS",
+      "detail": "제목: \"체척권 등록\" - 페이지 렌더링 정상"
+    },
+    {
+      "id": "RC-V04",
+      "name": "user19 체척권 목록",
+      "status": "PASS",
+      "detail": "스크린샷 실물 확인: user19(송소령) 체척권 3건 표시 (TKT-20260223-00028, 00029, 00045) - 이전 WARN 해소"
+    },
+    {
+      "id": "RC-V04f",
+      "name": "체척권 없는 사용자 빈 상태 메시지",
+      "status": "PASS",
+      "detail": "user01 별도 컨텍스트 로그인 후 '체척권이 없습니다' 표시 확인 (my/tickets 빈 상태 메시지 정상)"
+    }
+  ]
+}

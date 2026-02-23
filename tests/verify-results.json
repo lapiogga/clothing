@@ -1,0 +1,86 @@
+[
+  {
+    "id": "V01",
+    "name": "체척권 번호 형식",
+    "status": "WARN",
+    "detail": "번호: 데이터가 없습니다"
+  },
+  {
+    "id": "V01b",
+    "name": "admin 대시보드 체척권 통계",
+    "status": "PASS",
+    "detail": "발행 체척권 카운터 표시"
+  },
+  {
+    "id": "V02",
+    "name": "tailor 체척권 현황 - 데이터 없음",
+    "status": "WARN",
+    "detail": "DB에 해당 tailor_id의 체척권 없음 (issued 상태 포함)"
+  },
+  {
+    "id": "V02b",
+    "name": "tailor 체척권 필터",
+    "status": "PASS",
+    "detail": "상태 필터 콤보박스 정상 표시"
+  },
+  {
+    "id": "V02c",
+    "name": "tailor 체척권 번호 입력 필드",
+    "status": "FAIL",
+    "detail": "입력 필드 없음"
+  },
+  {
+    "id": "V03",
+    "name": "재고 이력 버튼 확인",
+    "status": "PASS",
+    "detail": "이력 버튼 11개 확인"
+  },
+  {
+    "id": "V03b",
+    "name": "재고 이력 다이얼로그",
+    "status": "PASS",
+    "detail": "다이얼로그 표시됨: 재고 변동 이력\n일시\t유형\t수량\t비고\n2026. 2. 18. 오후 12:36:36\t입고\t40\t�ʱ� �԰�\nClose"
+  },
+  {
+    "id": "V03c",
+    "name": "재고조정 페이지 이력 버튼",
+    "status": "PASS",
+    "detail": "이력 버튼 11개"
+  },
+  {
+    "id": "V03d",
+    "name": "재고조정 이력 다이얼로그",
+    "status": "PASS",
+    "detail": "다이얼로그 표시"
+  },
+  {
+    "id": "V04",
+    "name": "user19 체척권 목록 (데이터 없음)",
+    "status": "WARN",
+    "detail": "seed 데이터 미적용 또는 다른 계정"
+  },
+  {
+    "id": "V04e",
+    "name": "체척권 없는 사용자 빈 상태 메시지",
+    "status": "PASS",
+    "detail": "\"체척권이 없습니다\" 메시지 표시"
+  },
+  {
+    "id": "V05",
+    "name": "사용자 등록 폼 필드 확인",
+    "status": "PASS",
+    "detail": "이름: true, 이메일: true"
+  },
+  {
+    "id": "V05b",
+    "name": "역할 기본값 확인",
+    "status": "PASS",
+    "detail": "역할 선택 필드 존재"
+  },
+  {
+    "id": "V05",
+    "name": "검증 5 오류",
+    "status": "FAIL",
+    "detail": "locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\" data-size=\"sm\" data-slot=\"button\" data-variant=\"outline\" class=\"inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destr…>로그아웃</button> aka getByRole('button', { name: '로그아웃' })\n    2) <button type=\"submit\" data-slot=\"button\" data-size=\"default\" data-variant=\"default\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 ari…>등록</button> aka getByRole('button', { name: '등록' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n"
+  }
+]

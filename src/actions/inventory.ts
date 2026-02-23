@@ -90,6 +90,7 @@ export async function processIncoming(data: {
       inventory_id: inventoryId,
       log_type: "incoming",
       quantity: item.quantity,
+      description: null,
       created_by: authUser?.id,
     });
   }
@@ -136,7 +137,7 @@ export async function adjustInventory(data: {
     inventory_id: data.inventory_id,
     log_type: data.adjust_type,
     quantity: data.quantity,
-    reason: data.reason || null,
+    description: data.reason || null,
     created_by: authUser?.id,
   });
 

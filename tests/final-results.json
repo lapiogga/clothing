@@ -1,0 +1,176 @@
+[
+  {
+    "id": "A01",
+    "name": "admin 로그인 → /admin/dashboard",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/dashboard"
+  },
+  {
+    "id": "A02",
+    "name": "admin 대시보드 접근",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/dashboard"
+  },
+  {
+    "id": "A03",
+    "name": "사용자 목록 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/users"
+  },
+  {
+    "id": "A03b",
+    "name": "사용자 목록 데이터",
+    "status": "PASS",
+    "detail": "13행"
+  },
+  {
+    "id": "A03c",
+    "name": "사용자 등록 링크",
+    "status": "PASS",
+    "detail": "링크 표시됨"
+  },
+  {
+    "id": "A04",
+    "name": "사용자 등록 폼 접근",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/users/new"
+  },
+  {
+    "id": "A04b",
+    "name": "사용자 등록 폼 필드",
+    "status": "PASS",
+    "detail": "이름: true, 이메일: true"
+  },
+  {
+    "id": "A04c",
+    "name": "사용자 등록 실행",
+    "status": "PASS",
+    "detail": "등록 후 목록으로 이동: http://localhost:3000/admin/users"
+  },
+  {
+    "id": "A05",
+    "name": "품목 관리 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/products"
+  },
+  {
+    "id": "A05b",
+    "name": "품목 등록 - 대/중/소 분류 선택",
+    "status": "PASS",
+    "detail": "분류 선택 콤보박스 5개 (3개 이상이면 정상)"
+  },
+  {
+    "id": "A05c",
+    "name": "대분류 옵션 표시",
+    "status": "PASS",
+    "detail": "옵션 5개"
+  },
+  {
+    "id": "A06",
+    "name": "체척권 관리 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/admin/tickets"
+  },
+  {
+    "id": "A06b",
+    "name": "체척권 데이터",
+    "status": "PASS",
+    "detail": "1행"
+  },
+  {
+    "id": "A06c",
+    "name": "체척권 번호 형식",
+    "status": "WARN",
+    "detail": "첫 행: 데이터가 없습니다"
+  },
+  {
+    "id": "S01",
+    "name": "store 로그인",
+    "status": "PASS",
+    "detail": "http://localhost:3000/store/dashboard"
+  },
+  {
+    "id": "S02",
+    "name": "재고현황 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/store/inventory"
+  },
+  {
+    "id": "S02b",
+    "name": "재고 이력 표시",
+    "status": "PASS",
+    "detail": "이력 관련 내용 확인"
+  },
+  {
+    "id": "S03",
+    "name": "재고조정 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/store/inventory/adjust"
+  },
+  {
+    "id": "S03b",
+    "name": "재고조정 폼",
+    "status": "PASS",
+    "detail": "폼 요소 있음"
+  },
+  {
+    "id": "T01",
+    "name": "tailor 로그인",
+    "status": "PASS",
+    "detail": "http://localhost:3000/tailor/dashboard"
+  },
+  {
+    "id": "T02",
+    "name": "tailor 체척권 현황",
+    "status": "PASS",
+    "detail": "http://localhost:3000/tailor/tickets"
+  },
+  {
+    "id": "T02b",
+    "name": "체척권 데이터 조회",
+    "status": "PASS",
+    "detail": "1행"
+  },
+  {
+    "id": "T02c",
+    "name": "체척권 TKT- 번호",
+    "status": "WARN",
+    "detail": "TKT- 형식 미확인"
+  },
+  {
+    "id": "T03",
+    "name": "tailor 체척권 등록 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/tailor/tickets/register"
+  },
+  {
+    "id": "T03b",
+    "name": "체척권 번호 입력",
+    "status": "WARN",
+    "detail": "입력 필드 없음"
+  },
+  {
+    "id": "U01",
+    "name": "일반사용자 로그인",
+    "status": "PASS",
+    "detail": "http://localhost:3000/my/shop"
+  },
+  {
+    "id": "U02",
+    "name": "사용자 체척권 목록",
+    "status": "PASS",
+    "detail": "http://localhost:3000/my/tickets"
+  },
+  {
+    "id": "U02b",
+    "name": "체척권 구매정보 표시",
+    "status": "PASS",
+    "detail": "구매 관련 정보 확인"
+  },
+  {
+    "id": "U03",
+    "name": "포인트 조회 페이지",
+    "status": "PASS",
+    "detail": "http://localhost:3000/my/points"
+  }
+]

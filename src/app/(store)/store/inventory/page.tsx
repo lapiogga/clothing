@@ -176,7 +176,7 @@ export default function InventoryPage() {
                   <TableCell>{new Date(log.created_at).toLocaleString("ko-KR")}</TableCell>
                   <TableCell>{LOG_TYPE_LABELS[log.log_type] || log.log_type}</TableCell>
                   <TableCell className="text-right">{log.quantity}</TableCell>
-                  <TableCell>{log.reason || "-"}</TableCell>
+                  <TableCell>{log.description || "-"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

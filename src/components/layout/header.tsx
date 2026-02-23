@@ -90,11 +90,9 @@ export function Header({ userName, roleName, menuItems }: HeaderProps) {
           <span className="text-sm text-muted-foreground">
             {userName} ({roleName})
           </span>
-          <form action={logout}>
-            <Button variant="outline" size="sm" type="submit">
-              로그아웃
-            </Button>
-          </form>
+          <Button variant="outline" size="sm" type="button" onClick={() => logout()}>
+            로그아웃
+          </Button>
         </div>
       </div>
     </header>

@@ -41,6 +41,11 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [specs, setSpecs] = useState<any[]>([]);
 
+  // 품목 등록 다이얼로그 - 대/중/소 연계 선택 상태
+  const [prodLevel1Id, setProdLevel1Id] = useState<string>("");
+  const [prodLevel2Id, setProdLevel2Id] = useState<string>("");
+  const [prodLevel3Id, setProdLevel3Id] = useState<string>("");
+
   const [pending, setPending] = useState(false);
 
   // 카테고리 로드
@@ -66,6 +71,29 @@ export default function ProductsPage() {
   // 카테고리 트리 구성
   const level1 = categories.filter((c) => c.level === 1);
   const getChildren = (parentId: string) => categories.filter((c) => c.parent_id === parentId);
+
+  // 품목 등록/수정 다이얼로그 열기 (카테고리 역추적 포함)
+  function openProdDialog(product: any | null) {
+    setEditProduct(product);
+    if (product?.category_id) {
+      const cat3 = categories.find((c) => c.id === product.category_id);
+      const cat2 = cat3?.parent_id ? categories.find((c) => c.id === cat3.parent_id) : null;
+      const cat1 = cat2?.parent_id ? categories.find((c) => c.id === cat2.parent_id) : null;
+      setProdLevel1Id(cat1?.id || "");
+      setProdLevel2Id(cat2?.id || "");
+      setProdLevel3Id(cat3?.id || "");
+    } else {
+      setProdLevel1Id("");
+      setProdLevel2Id("");
+      setProdLevel3Id("");
+    }
+    setProdDialogOpen(true);
+  }
+
+  // 대/중/소 카테고리 필터
+  const prodLevel1List = categories.filter((c) => c.level === 1);
+  const prodLevel2List = prodLevel1Id ? categories.filter((c) => c.level === 2 && c.parent_id === prodLevel1Id) : [];
+  const prodLevel3List = prodLevel2Id ? categories.filter((c) => c.level === 3 && c.parent_id === prodLevel2Id) : [];
 
   // 카테고리 등록
   async function handleCreateCategory(formData: FormData) {
@@ -96,6 +124,10 @@ export default function ProductsPage() {
 
   // 품목 등록/수정
   async function handleProductSubmit(formData: FormData) {
+    // prodLevel3Id를 category_id로 설정 (소분류가 선택된 경우)
+    if (prodLevel3Id) {
+      formData.set("category_id", prodLevel3Id);
+    }
     setPending(true);
     const result = editProduct
       ? await updateProduct(editProduct.id, formData)
@@ -104,6 +136,9 @@ export default function ProductsPage() {
       toast.success(editProduct ? "수정되었습니다" : "등록되었습니다");
       setProdDialogOpen(false);
       setEditProduct(null);
+      setProdLevel1Id("");
+      setProdLevel2Id("");
+      setProdLevel3Id("");
       loadProducts();
     } else {
       toast.error(result.error || "처리에 실패했습니다");
@@ -143,9 +178,6 @@ export default function ProductsPage() {
       toast.error(result.error || "삭제에 실패했습니다");
     }
   }
-
-  // 소분류만 필터 (품목 등록 시 사용)
-  const level3Categories = categories.filter((c) => c.level === 3);
 
   return (
     <div className="flex gap-6">
@@ -227,7 +259,7 @@ export default function ProductsPage() {
       <div className="flex-1">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">품목 관리</h1>
-          <Button onClick={() => { setEditProduct(null); setProdDialogOpen(true); }}>
+          <Button onClick={() => openProdDialog(null)}>
             품목 등록
           </Button>
         </div>
@@ -269,7 +301,7 @@ export default function ProductsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => { setEditProduct(product); setProdDialogOpen(true); }}>수정</Button>
+                    <Button size="sm" variant="outline" onClick={() => openProdDialog(product)}>수정</Button>
                     {product.product_type === "finished" && (
                       <Button size="sm" variant="outline" onClick={() => openSpecDialog(product)}>규격</Button>
                     )}
@@ -307,7 +339,15 @@ export default function ProductsPage() {
       </Dialog>
 
       {/* 품목 등록/수정 다이얼로그 */}
-      <Dialog open={prodDialogOpen} onOpenChange={(open) => { setProdDialogOpen(open); if (!open) setEditProduct(null); }}>
+      <Dialog open={prodDialogOpen} onOpenChange={(open) => {
+        setProdDialogOpen(open);
+        if (!open) {
+          setEditProduct(null);
+          setProdLevel1Id("");
+          setProdLevel2Id("");
+          setProdLevel3Id("");
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editProduct ? "품목 수정" : "품목 등록"}</DialogTitle>
@@ -317,35 +357,73 @@ export default function ProductsPage() {
               <Label htmlFor="prod_name">품목명 *</Label>
               <Input id="prod_name" name="name" defaultValue={editProduct?.name || ""} required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            {/* 대/중/소 분류 연계 선택 */}
+            <div className="grid grid-cols-3 gap-2">
               <div className="space-y-2">
-                <Label>소분류 *</Label>
-                <Select name="category_id" defaultValue={editProduct?.category_id || ""}>
+                <Label>대분류 *</Label>
+                <Select
+                  value={prodLevel1Id}
+                  onValueChange={(v) => { setProdLevel1Id(v); setProdLevel2Id(""); }}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="소분류 선택" />
+                    <SelectValue placeholder="대분류" />
                   </SelectTrigger>
                   <SelectContent>
-                    {level3Categories.map((c) => (
+                    {prodLevel1List.map((c) => (
                       <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              {!editProduct && (
-                <div className="space-y-2">
-                  <Label>유형 *</Label>
-                  <Select name="product_type" defaultValue="finished">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="finished">완제품</SelectItem>
-                      <SelectItem value="custom">맞춤피복</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>중분류 *</Label>
+                <Select
+                  value={prodLevel2Id}
+                  onValueChange={(v) => setProdLevel2Id(v)}
+                  disabled={!prodLevel1Id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="중분류" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {prodLevel2List.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>소분류 *</Label>
+                <Select
+                  value={prodLevel3Id}
+                  onValueChange={(v) => setProdLevel3Id(v)}
+                  disabled={!prodLevel2Id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="소분류" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {prodLevel3List.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            {!editProduct && (
+              <div className="space-y-2">
+                <Label>유형 *</Label>
+                <Select name="product_type" defaultValue="finished">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="finished">완제품</SelectItem>
+                    <SelectItem value="custom">맞춤피복</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="prod_price">단가 (원) *</Label>
               <Input id="prod_price" name="price" type="number" min="0" defaultValue={editProduct?.price || 0} required />

@@ -51,11 +51,13 @@ export async function getUserById(id: string) {
 
 export async function createUser(formData: FormData) {
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   const email = formData.get("email") as string;
   const name = formData.get("name") as string;
   const role = formData.get("role") as string;
-  const rank = formData.get("rank") as string || null;
+  const rankRaw = formData.get("rank") as string;
+  const rank = rankRaw && rankRaw.trim() !== "" ? rankRaw : null;
   const military_number = formData.get("military_number") as string || null;
   const unit = formData.get("unit") as string || null;
   const enlist_date = formData.get("enlist_date") as string || null;
@@ -76,7 +78,6 @@ export async function createUser(formData: FormData) {
   }
 
   // Supabase Auth에 사용자 생성 (서비스 롤 키 필요)
-  const adminClient = createAdminClient();
   const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email,
     password: "1111",
@@ -90,8 +91,8 @@ export async function createUser(formData: FormData) {
     return { success: false, error: authError.message };
   }
 
-  // users 테이블에 저장
-  const { error: insertError } = await supabase.from("users").insert({
+  // users 테이블에 저장 (adminClient 사용 - RLS 우회)
+  const { error: insertError } = await adminClient.from("users").insert({
     id: authData.user.id,
     email,
     name,
@@ -107,12 +108,14 @@ export async function createUser(formData: FormData) {
   });
 
   if (insertError) {
-    return { success: false, error: insertError.message };
+    // Auth에서 이미 생성된 사용자 삭제 (롤백)
+    await adminClient.auth.admin.deleteUser(authData.user.id);
+    return { success: false, error: `사용자 정보 저장 실패: ${insertError.message}` };
   }
 
-  // point_summary 초기 레코드 생성 (일반사용자만)
+  // point_summary 초기 레코드 생성 (일반사용자만, adminClient 사용)
   if (role === "user") {
-    await supabase.from("point_summary").insert({
+    await adminClient.from("point_summary").insert({
       user_id: authData.user.id,
       total_points: 0,
       used_points: 0,

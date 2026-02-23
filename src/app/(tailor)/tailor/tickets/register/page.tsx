@@ -53,14 +53,19 @@ export default function RegisterTicketPage() {
       <Card className="mb-6">
         <CardHeader><CardTitle>체척권 조회</CardTitle></CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <Input
-              placeholder="체척권 번호 입력 (TKT-...)"
-              value={ticketNumber}
-              onChange={(e) => setTicketNumber(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <Button variant="outline" onClick={handleSearch}>조회</Button>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              일반사용자의 체척권 현황 화면에서 확인한 체척권 번호(TKT-로 시작)를 입력하세요.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="체척권 번호 입력 (예: TKT-20260101-00001)"
+                value={ticketNumber}
+                onChange={(e) => setTicketNumber(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+              <Button variant="outline" onClick={handleSearch}>조회</Button>
+            </div>
           </div>
         </CardContent>
       </Card>

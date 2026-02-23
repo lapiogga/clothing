@@ -51,7 +51,7 @@ async function insertInventoryLog(
       log_type: params.log_type,
       quantity: params.quantity,
       order_item_id: params.order_item_id || null,
-      reason: params.reason || null,
+      description: params.reason || null,
       created_by: params.created_by || null,
     });
   } catch {
@@ -336,6 +336,7 @@ export async function createCustomOrder(data: {
   if (orderErr) return { success: false, error: orderErr.message };
 
   // 주문 항목 생성 + 체척권 발행
+  const issuedTicketNumbers: string[] = [];
   for (const item of data.items) {
     const { data: orderItem } = await supabase
       .from("order_items")
@@ -350,25 +351,36 @@ export async function createCustomOrder(data: {
       .select()
       .single();
 
-    // 체척권 발행
+    // 체척권 발행 후 실제 TKT- 번호 수집
     if (orderItem) {
-      await supabase.from("tailoring_tickets").insert({
-        ticket_number: "TEMP",
-        order_item_id: orderItem.id,
-        user_id: data.user_id,
-        product_id: item.product_id,
-        amount: item.unit_price,
-        status: "issued",
-      });
+      const { data: ticket } = await supabase
+        .from("tailoring_tickets")
+        .insert({
+          ticket_number: "TEMP",
+          order_item_id: orderItem.id,
+          user_id: data.user_id,
+          product_id: item.product_id,
+          amount: item.unit_price,
+          status: "issued",
+        })
+        .select("ticket_number")
+        .single();
+      if (ticket?.ticket_number && ticket.ticket_number !== "TEMP") {
+        issuedTicketNumbers.push(ticket.ticket_number);
+      }
     }
   }
 
   // 예약포인트 차감 (맞춤피복은 재고 없으므로 reserve만)
+  // description에 TKT- 번호 포함하여 포인트 내역에서 체척권 확인 가능하도록
+  const ticketInfo = issuedTicketNumbers.length > 0
+    ? ` / 체척권: ${issuedTicketNumbers.join(", ")}`
+    : "";
   await insertPointLedger(supabase, {
     user_id: data.user_id,
     point_type: "reserve",
     amount: totalAmount,
-    description: `맞춤피복 구매 예약 (${order.order_number})`,
+    description: `맞춤피복 구매 예약 (${order.order_number}${ticketInfo})`,
     reference_type: "order",
     reference_id: order.id,
     created_by: authUser.id,
@@ -867,30 +879,34 @@ export async function getDailySalesStats(storeId: string, dateFrom: string, date
 export async function getProductSalesStats(storeId: string, dateFrom: string, dateTo: string) {
   const supabase = await createClient();
 
-  const { data } = await supabase
-    .from("order_items")
-    .select("quantity, subtotal, products(name), product_specs(spec_name), orders!inner(store_id, status, created_at)")
-    .eq("orders.store_id", storeId)
-    .eq("orders.status", "delivered")
-    .gte("orders.created_at", dateFrom)
-    .lte("orders.created_at", dateTo + "T23:59:59");
+  // orders 기준으로 조회 후 order_items 펼치기 (관계 필터링 방식보다 안정적)
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("order_items(quantity, subtotal, products(name), product_specs(spec_name))")
+    .eq("store_id", storeId)
+    .eq("status", "delivered")
+    .gte("created_at", dateFrom)
+    .lte("created_at", dateTo + "T23:59:59");
 
   const statsMap: Record<string, { product_name: string; spec_name: string; quantity: number; amount: number }> = {};
-  (data || []).forEach((item: any) => {
-    const key = `${item.products?.name}-${item.product_specs?.spec_name || ""}`;
-    if (!statsMap[key]) {
-      statsMap[key] = {
-        product_name: item.products?.name || "",
-        spec_name: item.product_specs?.spec_name || "",
-        quantity: 0,
-        amount: 0,
-      };
-    }
-    statsMap[key].quantity += item.quantity;
-    statsMap[key].amount += item.subtotal;
+  (orders || []).forEach((order: any) => {
+    const items = Array.isArray(order.order_items) ? order.order_items : (order.order_items ? [order.order_items] : []);
+    items.forEach((item: any) => {
+      const key = `${item.products?.name || ""}-${item.product_specs?.spec_name || ""}`;
+      if (!statsMap[key]) {
+        statsMap[key] = {
+          product_name: item.products?.name || "",
+          spec_name: item.product_specs?.spec_name || "",
+          quantity: 0,
+          amount: 0,
+        };
+      }
+      statsMap[key].quantity += item.quantity;
+      statsMap[key].amount += item.subtotal;
+    });
   });
 
-  return Object.values(statsMap);
+  return Object.values(statsMap).filter((s) => s.product_name !== "");
 }
 
 // ============================================================
@@ -901,26 +917,28 @@ export async function getUserSalesStats(storeId: string, dateFrom: string, dateT
 
   const { data } = await supabase
     .from("orders")
-    .select("total_amount, users(name, rank)")
+    .select("user_id, total_amount, users(name, rank)")
     .eq("store_id", storeId)
     .eq("status", "delivered")
     .gte("created_at", dateFrom)
     .lte("created_at", dateTo + "T23:59:59");
 
+  // user_id 기준으로 집계 (동명이인 구분, name null 방지)
   const statsMap: Record<string, { user_name: string; rank: string; count: number; amount: number }> = {};
   (data || []).forEach((order: any) => {
-    const name = order.users?.name || "";
-    if (!statsMap[name]) {
-      statsMap[name] = {
-        user_name: name,
+    const uid = order.user_id || "";
+    if (!uid) return;
+    if (!statsMap[uid]) {
+      statsMap[uid] = {
+        user_name: order.users?.name || uid,
         rank: order.users?.rank || "",
         count: 0,
         amount: 0,
       };
     }
-    statsMap[name].count++;
-    statsMap[name].amount += order.total_amount;
+    statsMap[uid].count++;
+    statsMap[uid].amount += order.total_amount;
   });
 
-  return Object.values(statsMap);
+  return Object.values(statsMap).sort((a, b) => b.amount - a.amount);
 }

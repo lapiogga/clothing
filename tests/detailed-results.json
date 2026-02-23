@@ -1,0 +1,116 @@
+[
+  {
+    "testId": "A01",
+    "testName": "admin 로그인 성공",
+    "status": "FAIL",
+    "detail": "예상과 다른 URL: http://localhost:3000/ - 직접 페이지 접근 시도"
+  },
+  {
+    "testId": "A02",
+    "testName": "admin 대시보드 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "A03",
+    "testName": "admin 사용자 목록 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "A04",
+    "testName": "사용자 등록 폼 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "A05",
+    "testName": "품목 관리 페이지 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "A06",
+    "testName": "체척권 관리 페이지 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "S01",
+    "testName": "store 로그인 성공",
+    "status": "WARN",
+    "detail": "루트로 이동됨 (로그인됐을 수 있음): http://localhost:3000/"
+  },
+  {
+    "testId": "S02",
+    "testName": "store 대시보드 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "S03",
+    "testName": "재고현황 페이지 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "S04",
+    "testName": "재고조정 페이지 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "T01",
+    "testName": "tailor 로그인 시도",
+    "status": "WARN",
+    "detail": "URL: http://localhost:3000/"
+  },
+  {
+    "testId": "T02",
+    "testName": "tailor 대시보드 접근",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "T03",
+    "testName": "tailor 체척권 현황 페이지",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "T04",
+    "testName": "tailor 체척권 등록 페이지",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "U01",
+    "testName": "일반사용자 로그인 시도",
+    "status": "WARN",
+    "detail": "URL: http://localhost:3000/"
+  },
+  {
+    "testId": "U02",
+    "testName": "일반사용자 쇼핑 페이지",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "U03",
+    "testName": "포인트 조회 페이지",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "U04",
+    "testName": "사용자 체척권 페이지",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  },
+  {
+    "testId": "U05",
+    "testName": "사용자 주문 목록",
+    "status": "FAIL",
+    "detail": "리다이렉트됨: http://localhost:3000/"
+  }
+]

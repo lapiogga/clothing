@@ -75,9 +75,14 @@ export default function MyTicketsPage() {
             <TableRow key={t.id}>
               <TableCell>
                 <div className="font-mono text-sm">{t.ticket_number}</div>
-                {t.order_items?.orders?.order_number && (
-                  <div className="text-xs text-muted-foreground mt-0.5">주문: {t.order_items.orders.order_number}</div>
-                )}
+                {(() => {
+                  // order_items가 배열 또는 객체로 반환될 수 있음
+                  const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
+                  const orderNumber = orderItem?.orders?.order_number;
+                  return orderNumber ? (
+                    <div className="text-xs text-muted-foreground mt-0.5">주문번호: {orderNumber}</div>
+                  ) : null;
+                })()}
               </TableCell>
               <TableCell>{t.products?.name || "-"}</TableCell>
               <TableCell className="text-right">{t.amount.toLocaleString()}원</TableCell>

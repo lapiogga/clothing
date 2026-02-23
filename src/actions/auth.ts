@@ -96,5 +96,21 @@ export async function getCurrentUser() {
     .eq("id", user.id)
     .single();
 
+  // users 테이블에 레코드가 없어도 auth user id는 반환 (RLS 기반 조회 가능하도록)
+  if (!profile) {
+    return {
+      id: user.id,
+      email: user.email ?? "",
+      name: "",
+      role: "user" as const,
+      rank: null,
+      military_number: null,
+      unit: null,
+      store_id: null,
+      tailor_id: null,
+      is_active: true,
+    };
+  }
+
   return profile;
 }
