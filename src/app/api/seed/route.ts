@@ -25,6 +25,11 @@ const TEST_USERS = [
 ];
 
 export async function POST(request: Request) {
+  // 운영 환경에서는 접근 차단
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   if (searchParams.get("key") !== SEED_KEY) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
