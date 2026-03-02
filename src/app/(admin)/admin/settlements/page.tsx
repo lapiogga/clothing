@@ -23,7 +23,7 @@ export default function SettlementsPage() {
   const [settlements, setSettlements] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("all");
   const [tailors, setTailors] = useState<any[]>([]);
 
   // 정산 생성 다이얼로그
@@ -36,7 +36,7 @@ export default function SettlementsPage() {
   const [pending, setPending] = useState(false);
 
   const fetchData = useCallback(async () => {
-    const result = await getSettlements({ page, status: status || undefined });
+    const result = await getSettlements({ page, status: status === "all" ? undefined : status });
     setSettlements(result.settlements);
     setTotal(result.total);
   }, [page, status]);
@@ -99,7 +99,7 @@ export default function SettlementsPage() {
       </div>
 
       <div className="flex gap-3 mb-4">
-        <Select value={status} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
+        <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
           <SelectTrigger className="w-36"><SelectValue placeholder="상태 전체" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">전체</SelectItem>

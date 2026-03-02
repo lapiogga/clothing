@@ -55,7 +55,7 @@ export default async function AdminDashboardPage() {
     supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "user").eq("is_active", true),
     supabase.from("point_ledger").select("id, amount").eq("point_type", "grant").eq("fiscal_year", year),
     supabase.from("tailoring_tickets").select("id", { count: "exact", head: true }).eq("status", "cancel_requested"),
-    supabase.from("tailoring_tickets").select("id", { count: "exact", head: true }).eq("status", "registered"),
+    supabase.from("tailoring_tickets").select("id", { count: "exact", head: true }).eq("status", "registered").is("settlement_id", null),
 
     // 활성 판매소 목록
     supabase.from("stores").select("id, name").eq("is_active", true).order("name"),
